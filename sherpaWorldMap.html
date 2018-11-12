@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<HTML>
+    
+<HEAD>
+    <SCRIPT>
+
+        /*  
+            @class: CSC278   
+            @subject: homework3 
+            @sid: S0309438
+            @author: Dorje N. Sherpa
+        */
+    
+    	//gbobal variable to temporary usage of URL
+       	var newURL='';
+        
+        //set cookie to set current URL as cookie
+        function setCookie(cname,cvalue,exdays) 
+        {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays*24*60*60*1000));
+            var expires = "expires=" + d.toGMTString();
+            document.cookie = cname + "=" + cvalue; + ";" + expires + ";path=/";
+        }
+
+		//get cookie and setcookie copied from w3school jscookies :)
+        function getCookie(cname) 
+        {
+            var name = cname + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for(var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+        
+        //to validate if cookie is not returning null or else initiaite to default URL
+        function checkCookie()
+        {
+        	var currentURL=getCookie("url");
+    		if (currentURL != "") 
+        	{
+            	return currentURL;
+    		} 
+        	else 
+        	{
+       			if (currentURL == "" || currentURL == null) 
+                   {    
+                        var str = "🌎🌎🌎🌎🌎🌎🌎";
+                	    var a = createURL(0,0,0);
+        	   		    setCookie("url", a, 30);
+                        return a;
+    	   		    }
+	    	}
+
+        }
+        
+        //global variables for reuse of indexes
+    	var lastIndexX,lastIndexY,startIndex;
+		var lastIndex = str.lastIndexOf(".png");
+    
+    	//global variables for reuse of current locations
+    	var currentX=0;//X axis index
+        var currentY=0;//Y axis index
+        var currentZ=0;//Zoom index
+
+		//to read X axis index from cache URL and return
+		function getX()
+        {
+        	newURL = checkCookie();
+            lastIndex = newURL.lastIndexOf(".png");
+            var i;
+    		for(i=lastIndex-1;i>0;i--)
+    		{
+    			if(newURL.charAt(i) == '/')
+        		{	
+        			lastIndexY=i+1;
+            		i=0;
+        		}
+    		}
+    		var j;
+    		for(j=lastIndexY-2;j>0;j--)
+    		{
+    			if(newURL.charAt(j) == '/')
+        		{	
+        			lastIndexX=j+1;
+            		j=0;
+        		}
+    		}
+    		currentX = newURL.slice(lastIndexX,lastIndexY-1);
+            return parseInt(currentX);
+        }
+        
+		//to read Y index from cache URL and return
+        function getY()
+        {
+        	newURL = checkCookie();
+            lastIndex = newURL.lastIndexOf(".png");
+            var i;
+    		for(i=lastIndex-1;i>0;i--)
+    		{
+    			if(newURL.charAt(i) == '/')
+        		{	
+        			lastIndexY=i+1;
+            		i=0;
+        		}
+    		} 
+    		currentY = newURL.slice(lastIndexY,lastIndex);
+            return parseInt(currentY);
+        }
+
+		//to read Z axs index from cache URL and return        
+		function getZ()
+        {
+        	newURL=checkCookie();
+            lastIndex = newURL.lastIndexOf(".png");
+    		var i;
+    		for(i=lastIndex-1;i>0;i--)
+    		{
+    			if(newURL.charAt(i) == '/')
+        		{	
+        			lastIndexY=i+1;
+            		i=0;
+        		}
+    		}
+    		var j;
+    		for(j=lastIndexY-2;j>0;j--)
+    		{
+    			if(newURL.charAt(j) == '/')
+        		{	
+        			lastIndexX=j+1;
+            		j=0;
+        		}
+    		}
+    		var k;
+    		for(k=lastIndexX-2;k>0;k--)
+    		{
+    			if(newURL.charAt(k) == '/')
+        		{	
+        			startIndex=k+1;
+            		k=0;
+        		}
+    		}
+    
+    		currentZ = newURL.slice(startIndex,lastIndexX-1);
+            return parseInt(currentZ);
+    
+        }
+        
+        //to generate URL with input zoom , X axis and Y axis
+        function createURL(z,x,y)
+        {
+        	var stemp="https://b.tile.openstreetmap.org/";
+            var tempString = stemp.concat(parseInt(z),"/",parseInt(x),"/",parseInt(y),".png");   
+            return tempString;
+        }
+
+
+// setters and validation for Z, X, Y indeces---------------------------------------------------
+        function setX(newIN)
+        { 
+            currentY = getY();
+            currentZ = getZ();
+         	
+        	currentX = newIN;
+           
+           	var temp=createURL(currentZ,currentX,currentY);
+            setCookie("url", temp, 30);
+        }
+        function setY(newIN)
+        {
+        	currentX = getX();
+            currentZ = getZ();
+            
+        	currentY = newIN;
+            
+            var temp=createURL(currentZ,currentX,currentY);
+            setCookie("url", temp, 30);
+        }
+        function setZ(newIN)
+        {
+            currentX = getX();
+            currentY = getY();
+            if(newIN>=0 && newIN<17)
+            {
+        		currentZ=newIN;
+            }
+            var temp=createURL(currentZ,currentX,currentY);
+            setCookie("url", temp, 30);
+        }
+        
+        
+//---------------------------------------------------------
+//below function to provide functionality as described in requirements
+        
+        function zoomUpperLeft()
+        {
+        	currentZ = getZ();
+            var limit = Math.pow(2, currentZ)-1;
+            if(currentZ<16)
+            {
+                var temp=(currentZ+1);
+            	limit = Math.pow(2, temp)-1;
+                setZ(temp);
+            }
+            else
+            {
+            	alert(" Above zoom constraint!!!");
+            }
+            var temp=createURL(getZ(),getX(),getY());
+            setCookie("url", temp, 30);
+            document.getElementById("imageid").src = getCookie("url");    
+        }
+            
+        function zoomUpperRight()
+        {
+			currentZ = getZ();
+            var limit = Math.pow(2, currentZ)-1;
+            if(currentZ<16)
+            {
+                var temp=(currentZ+1);
+            	limit = Math.pow(2, temp)-1;
+                setZ(temp);
+        		setX(limit);
+            }
+            else
+            {
+            	alert(" Above zoom constraint!!!");
+            }
+            var temp=createURL(getZ(),getX(),getY());
+            setCookie("url", temp, 30);
+            document.getElementById("imageid").src = getCookie("url");
+        }
+
+        
+        function zoomLowerLeft()
+        {
+        	currentZ = getZ();
+            var limit = Math.pow(2, currentZ)-1;
+            if(currentZ<16)
+            {
+                var temp=(currentZ+1);
+            	limit = Math.pow(2, temp)-1;
+                setZ(temp);
+        		setY(limit);
+            }
+            else
+            {
+            	alert(" Above zoom constraint!!!");
+            }
+            var temp=createURL(getZ(),getX(),getY());
+            setCookie("url", temp, 30);
+            document.getElementById("imageid").src = getCookie("url");
+        }
+
+        
+        function zoomLowerRight()
+        {
+        	currentZ = getZ();
+            var limit = Math.pow(2, currentZ)-1;
+            if(currentZ<16)
+            {
+                var temp=(currentZ+1);
+            	limit = Math.pow(2, temp)-1;
+                setZ(temp);
+        		setX(limit);
+            	setY(limit);
+            }
+            else
+            {
+            	alert(" Above zoom constraint!!!");
+            }
+            var temp=createURL(getZ(),getX(),getY());
+            setCookie("url", temp, 30);
+            document.getElementById("imageid").src = getCookie("url");
+            
+            //to test outputs!!!
+            //var str = getCookie("url");
+            //var per = str.concat(" Z=",currentZ," X=",currentX," Y=",currentY," limt=",limit);
+            //document.getElementById("test").innerHTML = per;
+        }
+
+		//to zoom out one level and validagte zoomout
+        function backClicked()
+        {
+        	currentZ = getZ();
+            currentX = getX();
+            currentY = getY();
+            var limit = Math.pow(2, currentZ)-1;
+            if(currentZ>0 && currentZ<17)
+            {
+                var temp=currentZ-1;
+                setZ(temp);
+                limit = Math.pow(2, temp)-1;
+            	if(currentX>limit)
+            	{
+            		setX(limit);
+            	}
+            	if(currentY>limit)
+            	{
+            		setY(limit);
+            	}
+            }
+            else
+            {
+            	alert(" Zoom constraint reached!!!");
+            }
+            var temp=createURL(getZ(),getX(),getY());
+            setCookie("url", temp, 30);
+            document.getElementById("imageid").src = getCookie("url");
+        }
+//------------------------------------------------------------
+
+//rest of the script below to implement go east, west north and south
+
+		function east()
+    	{
+        	currentZ = getZ();
+            if(currentZ != 0)
+            {
+            currentX = getX();
+            currentY = getY();
+            var limit = Math.pow(2, currentZ)-1;
+    		var validator = currentX+1;
+    		if(validator>limit)
+            {
+            	setX(0);
+            }
+            else
+            {
+            	setX(validator);
+            }
+        	var temp=createURL(getZ(),getX(),getY());
+            setCookie("url", temp, 30);
+            document.getElementById("imageid").src = getCookie("url");
+    	}}
+    
+		function west()
+    	{
+        	currentZ = getZ();
+            if(currentZ != 0)
+            {
+            currentX = getX();
+            currentY = getY();
+            var limit = Math.pow(2, currentZ)-1;
+    		var validator = currentX-1;
+    		if(validator<0)
+            {
+            	setX(limit);
+            }
+            else
+            {
+            	setX(validator);
+            }
+        	var temp=createURL(getZ(),getX(),getY());
+            setCookie("url", temp, 30);
+            document.getElementById("imageid").src = getCookie("url");
+    	}}
+    
+		function north()
+    	{
+        	currentZ = getZ();
+            if(currentZ != 0)
+            {
+            currentX = getX();
+            currentY = getY();
+            var limit = Math.pow(2, currentZ)-1;
+    		var validator = currentY-1;
+    		if(validator<0)
+            {
+            	alert("North boundary reached!!!");
+            }
+            else
+            {
+            	setY(validator);
+            }
+            var temp=createURL(getZ(),getX(),getY());
+            setCookie("url", temp, 30);
+            document.getElementById("imageid").src = getCookie("url");
+    	}}
+    
+		function south()
+    	{
+        	currentZ = getZ();
+            if(currentZ != 0)
+            {
+            currentX = getX();
+            currentY = getY();
+            var limit = Math.pow(2, currentZ)-1;
+    		var validator = currentY+1;
+    		if(validator>limit)
+            {
+            	alert("South boundary reached!!!");
+            }
+            else
+            {
+            	setY(validator);
+            }
+    		
+            var temp=createURL(getZ(),getX(),getY());
+            setCookie("url", temp, 30);
+            document.getElementById("imageid").src = getCookie("url");
+    	}}
+        
+//-----------------------------------------------------------------
+    </SCRIPT>
+</HEAD>
+
+<BODY style="background-image:url('https://static.bhphoto.com/images/images500x500/1233087856000_486372.jpg')">
+        <h2 id="head">Sherpa World Map</h2>
+         <p id="test"></p>
+        <img id="imageid" src="http://b.tile.openstreetmap.org/0/0/0.png" USEMAP="#tilemap">
+
+        <MAP NAME=tilemap>
+                <AREA SHAPE=RECT COORDS="0,0,128,128"
+                                        HREF="javascript:zoomUpperLeft()">
+                <AREA SHAPE=RECT COORDS="128,0,256,128"
+                                        HREF="javascript:zoomUpperRight()">
+                <AREA SHAPE=RECT COORDS="0,128,128,256"
+                                        HREF="javascript:zoomLowerLeft()">
+                <AREA SHAPE=RECT COORDS="128,128,256,256"
+                                        HREF="javascript:zoomLowerRight()">
+        </MAP><br>
+        <button onclick="backClicked()">Back</button>
+        <br>
+        <TABLE>
+        	<button id="east" onclick="east()"> Go East-</button>
+            <button id="west" onclick="west()"> -Go West</button>
+            
+            <Br>
+            <button id="north" onclick="north()">Go North</button>
+            <button id="south" onclick="south()">Go South</button>
+        </TABLE>
+</BODY>
+</HTML>
